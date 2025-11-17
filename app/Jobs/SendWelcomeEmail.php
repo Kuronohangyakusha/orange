@@ -3,12 +3,12 @@
 namespace App\Jobs;
 
 use App\Models\Client;
+use App\Services\Smtp2GoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 
 class SendWelcomeEmail implements ShouldQueue
 {
@@ -45,9 +45,7 @@ class SendWelcomeEmail implements ShouldQueue
             'code_marchand' => $compte->code_marchand ?? null,
         ];
 
-        Mail::send('emails.welcome', $data, function ($message) use ($data) {
-            $message->to($data['email'], $data['nom'].' '.$data['prenom'])
-                ->subject('Bienvenue chez Orange - Informations de votre compte');
-        });
+        $emailContent = view('emails.welcome', $data)->render();
+        Smtp2GoService::sendEmail($data['email'], 'Bienvenue chez Orange - Informations de votre compte', $emailContent);
     }
 }

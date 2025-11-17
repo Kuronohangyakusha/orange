@@ -4,12 +4,12 @@ namespace App\Jobs;
 
 use App\Mail\TransactionNotification;
 use App\Models\Transaction;
+use App\Services\Smtp2GoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 
 class SendTransactionNotification implements ShouldQueue
 {
@@ -32,8 +32,11 @@ class SendTransactionNotification implements ShouldQueue
     {
         $client = $this->transaction->compte->user->client;
 
-        // Envoyer la notification par email
-        Mail::to($client->email)->send(new TransactionNotification($this->transaction));
+        // Rendre le contenu HTML de l'email
+        $emailContent = (new TransactionNotification($this->transaction))->render();
+
+        // Envoyer via SMTP2GO API
+        Smtp2GoService::sendEmail($client->email, 'Notification de Transaction', $emailContent);
     }
 
     /**

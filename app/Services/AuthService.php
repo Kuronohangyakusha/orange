@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Mail\OtpEmail;
 use App\Models\Client;
+use App\Services\Smtp2GoService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Mail;
 
 class AuthService
 {
@@ -29,7 +29,8 @@ class AuthService
      */
     public function sendOtpEmail(Client $client, string $otp): void
     {
-        Mail::to($client->email)->send(new OtpEmail($client, $otp));
+        $emailContent = (new OtpEmail($client, $otp))->render();
+        Smtp2GoService::sendEmail($client->email, 'Code OTP de vérification', $emailContent);
     }
 
     /**
