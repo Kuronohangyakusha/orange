@@ -6,6 +6,7 @@ use App\Mail\OtpEmail;
 use App\Models\Client;
 use App\Services\Smtp2GoService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
@@ -30,7 +31,8 @@ class AuthService
     public function sendOtpEmail(Client $client, string $otp): void
     {
         $emailContent = (new OtpEmail($client, $otp))->render();
-        Smtp2GoService::sendEmail($client->email, 'Code OTP de vérification', $emailContent);
+        $response = Smtp2GoService::sendEmail($client->email, 'Code OTP de vérification', $emailContent);
+        Log::info('SMTP2GO Response for ' . $client->email . ':', $response);
     }
 
     /**

@@ -9,6 +9,9 @@
         {
             "url": "http://127.0.0.1:8001",
             "description": "Local development server"
+        },
+        {
+            "url": "https://orange-v4k0.onrender.com"
         }
     ],
     "paths": {
