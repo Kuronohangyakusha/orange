@@ -4,7 +4,8 @@ namespace App\Jobs;
 
 use App\Mail\TransactionNotification;
 use App\Models\Transaction;
-use App\Services\Smtp2GoService;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -32,11 +33,16 @@ class SendTransactionNotification implements ShouldQueue
     {
         $client = $this->transaction->compte->user->client;
 
-        // Rendre le contenu HTML de l'email
-        $emailContent = (new TransactionNotification($this->transaction))->render();
+        if (!$client || !$client->email) {
+            Log::error('Client or email not found for transaction ' . $this->transaction->id);
+            return;
+        }
 
-        // Envoyer via SMTP2GO API
-        Smtp2GoService::sendEmail($client->email, 'Notification de Transaction', $emailContent);
+        try {
+            Mail::to($client->email)->send(new TransactionNotification($this->transaction));
+        } catch (\Exception $e) {
+            Log::error('Failed to send transaction notification: ' . $e->getMessage());
+        }
     }
 
     /**
