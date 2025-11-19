@@ -16,6 +16,12 @@ class Smtp2GoService
             'html_body' => $body,
         ]);
 
-        return $response->json();
+        $data = $response->json();
+
+        if (!isset($data['request']['status']) || $data['request']['status'] !== 'success') {
+            throw new \Exception('SMTP2GO send failed: ' . json_encode($data));
+        }
+
+        return $data;
     }
 }

@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Mail\OtpEmail;
 use App\Models\Client;
-use App\Services\Smtp2GoService;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -30,9 +30,13 @@ class AuthService
      */
     public function sendOtpEmail(Client $client, string $otp): void
     {
-        $emailContent = (new OtpEmail($client, $otp))->render();
-        $response = Smtp2GoService::sendEmail($client->email, 'Code OTP de vérification', $emailContent);
-        Log::info('SMTP2GO Response for ' . $client->email . ':', $response);
+        try {
+            Mail::to($client->email)->send(new OtpEmail($client, $otp));
+            Log::info('OTP email sent successfully to ' . $client->email);
+        } catch (\Exception $e) {
+            Log::error('Failed to send OTP email to ' . $client->email . ': ' . $e->getMessage());
+            throw $e; // Re-throw to make the API fail if email fails
+        }
     }
 
     /**
